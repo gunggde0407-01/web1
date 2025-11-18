@@ -1,0 +1,2439 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fam-space - Kelola Kesehatan Keluarga dengan AI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
+    <style>
+        :root {
+            --primary-pink: #e91e63;
+            --secondary-pink: #f8bbd9;
+            --light-pink: #fce4ec;
+            --dark-pink: #ad1457;
+            --accent-pink: #f48fb1;
+            --pink-gradient: linear-gradient(135deg, #e91e63, #f8bbd9);
+            --light: #f9f9f9;
+            --dark: #333;
+            --gray: #666;
+            --light-gray: #e0e0e0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header Styles */
+        header {
+            background: var(--pink-gradient);
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo-icon {
+            font-size: 2.5rem;
+            background: white;
+            color: var(--primary-pink);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .logo-text {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        
+        .logo-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        /* Navigation Menu */
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        /* Hamburger Menu */
+        .hamburger-menu {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 30px;
+            height: 21px;
+            cursor: pointer;
+        }
+        
+        .hamburger-line {
+            width: 100%;
+            height: 3px;
+            background-color: white;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+        
+        .hamburger-menu.active .hamburger-line:nth-child(1) {
+            transform: translateY(9px) rotate(45deg);
+        }
+        
+        .hamburger-menu.active .hamburger-line:nth-child(2) {
+            opacity: 0;
+        }
+        
+        .hamburger-menu.active .hamburger-line:nth-child(3) {
+            transform: translateY(-9px) rotate(-45deg);
+        }
+        
+        /* Mobile Navigation */
+        .mobile-nav {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 280px;
+            height: 100vh;
+            background: white;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+            z-index: 999;
+            transition: right 0.3s ease;
+            padding: 80px 20px 20px;
+        }
+        
+        .mobile-nav.active {
+            right: 0;
+        }
+        
+        .mobile-nav-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 998;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .mobile-nav-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .mobile-nav-links {
+            list-style: none;
+        }
+        
+        .mobile-nav-links li {
+            margin-bottom: 15px;
+        }
+        
+        .mobile-nav-links a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 15px;
+            color: var(--dark);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .mobile-nav-links a:hover,
+        .mobile-nav-links a.active {
+            background: var(--light-pink);
+            color: var(--primary-pink);
+        }
+        
+        .mobile-nav-links i {
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(rgba(233, 30, 99, 0.85), rgba(248, 187, 217, 0.85)), url('https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 150px 0 80px;
+            text-align: center;
+        }
+        
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto 30px;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: white;
+            color: var(--primary-pink);
+            padding: 12px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        /* User Groups Section */
+        .user-groups {
+            padding: 80px 0;
+            background: var(--light-pink);
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 50px;
+            color: var(--dark-pink);
+            font-size: 2rem;
+        }
+        
+        .section-subtitle {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--gray);
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .groups-container {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .group-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            width: 300px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .group-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+        
+        .group-header {
+            padding: 20px;
+            text-align: center;
+            color: white;
+        }
+        
+        .group-remaja {
+            background: linear-gradient(135deg, #f8bbd9, #e91e63);
+        }
+        
+        .group-catin {
+            background: linear-gradient(135deg, #f48fb1, #ad1457);
+        }
+        
+        .group-lansia {
+            background: linear-gradient(135deg, #f06292, #880e4f);
+        }
+        
+        .group-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .group-title {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .group-features {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .group-features ul {
+            list-style: none;
+            flex-grow: 1;
+        }
+        
+        .group-features li {
+            padding: 10px 0;
+            border-bottom: 1px solid var(--light-gray);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .group-features li:last-child {
+            border-bottom: none;
+        }
+        
+        .feature-icon {
+            color: var(--primary-pink);
+            font-size: 1.2rem;
+        }
+        
+        .feature-btn-container {
+            margin-top: auto;
+            padding-top: 20px;
+            text-align: center;
+        }
+        
+        .calculator-btn {
+            background: var(--pink-gradient);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+            width: 100%;
+            max-width: 200px;
+        }
+        
+        .calculator-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(233, 30, 99, 0.3);
+        }
+        
+        /* Features Section */
+        .features {
+            padding: 80px 0;
+            background: var(--light-pink);
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            border-top: 4px solid var(--primary-pink);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .feature-icon-large {
+            font-size: 2.5rem;
+            color: var(--primary-pink);
+            margin-bottom: 20px;
+        }
+        
+        .feature-title {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: var(--dark-pink);
+        }
+        
+        .feature-card p {
+            flex-grow: 1;
+            margin-bottom: 20px;
+        }
+        
+        /* Chatbot Section */
+        .chatbot-section {
+            padding: 80px 0;
+            background: var(--pink-gradient);
+            color: white;
+        }
+        
+        .chatbot-container {
+            display: flex;
+            align-items: center;
+            gap: 50px;
+            flex-wrap: wrap;
+        }
+        
+        .chatbot-image {
+            flex: 1;
+            min-width: 300px;
+            text-align: center;
+        }
+        
+        .chatbot-image img {
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .chatbot-content {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .chatbot-title {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+        
+        .chatbot-desc {
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+        
+        .chatbot-button {
+            background: white;
+            color: var(--primary-pink);
+            border: none;
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+        
+        .chatbot-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        /* Footer */
+        footer {
+            background: var(--dark-pink);
+            color: white;
+            padding: 50px 0 20px;
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .footer-column h3 {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: var(--secondary-pink);
+        }
+        
+        .footer-links {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+        
+        .footer-links a {
+            color: #f8bbd9;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .footer-links a:hover {
+            color: white;
+            padding-left: 5px;
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: #f8bbd9;
+            font-size: 0.9rem;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .hero p {
+                font-size: 1rem;
+            }
+            
+            .section-title {
+                font-size: 1.7rem;
+            }
+        }
+        
+        /* Popup Styles */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .popup-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .popup {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: scale(0.8);
+            opacity: 0;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .popup.active {
+            transform: scale(1);
+            opacity: 1;
+        }
+        
+        .popup-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid var(--light-gray);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--pink-gradient);
+            color: white;
+            border-radius: 10px 10px 0 0;
+        }
+        
+        .popup-header h3 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .popup-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: white;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .popup-close:hover {
+            color: var(--secondary-pink);
+        }
+        
+        .popup-body {
+            padding: 25px;
+        }
+        
+        .popup-footer {
+            padding: 15px 25px;
+            border-top: 1px solid var(--light-gray);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 12px 15px;
+            border: 1px solid var(--light-gray);
+            border-radius: 5px;
+            background-color: white;
+            color: var(--dark);
+            transition: all 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-pink);
+            box-shadow: 0 0 0 2px rgba(233, 30, 99, 0.2);
+        }
+        
+        .calculator-result {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: var(--light-pink);
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .calculator-result.active {
+            display: block;
+        }
+        
+        .result-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-pink);
+            margin: 10px 0;
+        }
+        
+        .result-category {
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-weight: 600;
+            text-align: center;
+            margin-top: 10px;
+        }
+        
+        .result-underweight {
+            background-color: #FFEAA7;
+            color: #E17055;
+        }
+        
+        .result-normal {
+            background-color: #55EFC4;
+            color: #00B894;
+        }
+        
+        .result-overweight {
+            background-color: #FDCB6E;
+            color: #E17055;
+        }
+        
+        .result-obese {
+            background-color: #FF7675;
+            color: #D63031;
+        }
+        
+        /* Maps Section */
+        .maps-section {
+            padding: 80px 0;
+            background: var(--light-pink);
+        }
+        
+        .map-container {
+            background: white;
+            border-radius: 10px;
+            padding: 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            height: 500px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        #healthcare-map {
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+        }
+        
+        .search-box {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            display: flex;
+            gap: 8px;
+            background: white;
+            padding: 8px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .search-box input {
+            padding: 8px 10px;
+            border-radius: 5px;
+            border: 1px solid var(--light-gray);
+            width: 250px;
+        }
+        
+        .search-box button {
+            padding: 8px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: var(--primary-pink);
+            color: white;
+            border: none;
+        }
+        
+        /* Calculator Section */
+        .calculators {
+            padding: 80px 0;
+            background: white;
+        }
+        
+        .calculators-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .calculator-card {
+            background: white;
+            border-radius: 10px;
+            padding: 30px 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            text-align: center;
+            border-top: 4px solid var(--primary-pink);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .calculator-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .calculator-icon {
+            font-size: 2.5rem;
+            color: var(--primary-pink);
+            margin-bottom: 20px;
+        }
+        
+        .calculator-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: var(--dark-pink);
+        }
+        
+        .calculator-card p {
+            flex-grow: 1;
+            margin-bottom: 20px;
+        }
+        
+        /* Calendar Styles */
+        .calendar-container {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin-top: 20px;
+        }
+        
+        .calendar-day {
+            padding: 10px;
+            text-align: center;
+            border-radius: 5px;
+            background: var(--light-pink);
+            cursor: pointer;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .calendar-day.period {
+            background: var(--primary-pink);
+            color: white;
+        }
+        
+        .calendar-day.fertile {
+            background: #ffcc80;
+        }
+        
+        .calendar-day.predicted {
+            background: #c8e6c9;
+        }
+        
+        .calendar-day.today {
+            border: 2px solid var(--primary-pink);
+        }
+        
+        /* Alarm Section */
+        .alarm-container {
+            margin-top: 20px;
+        }
+        
+        .alarm-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        
+        .alarm-item:last-child {
+            border-bottom: none;
+        }
+        
+        .alarm-time {
+            font-weight: bold;
+        }
+        
+        .alarm-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .alarm-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--primary-pink);
+        }
+        
+        /* Education Content */
+        .education-content {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        
+        .education-section {
+            margin-bottom: 20px;
+        }
+        
+        .education-section h4 {
+            color: var(--primary-pink);
+            margin-bottom: 10px;
+        }
+        
+        .education-section ul {
+            padding-left: 20px;
+        }
+        
+        .education-section li {
+            margin-bottom: 8px;
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--light-gray);
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+        }
+        
+        .tab.active {
+            border-bottom: 3px solid var(--primary-pink);
+            color: var(--primary-pink);
+            font-weight: 600;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .search-box input {
+                width: 200px;
+            }
+            
+            .popup {
+                max-width: 95%;
+            }
+            
+            .tabs {
+                overflow-x: auto;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .search-box {
+                left: 10px;
+                right: 10px;
+            }
+            
+            .search-box input {
+                width: 100%;
+            }
+            
+            .mobile-nav {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <div>
+                        <div class="logo-text">Fam-space</div>
+                        <div class="logo-subtitle">Family Health Space</div>
+                    </div>
+                </div>
+                <div class="nav-menu">
+                    <div class="hamburger-menu" id="hamburgerMenu">
+                        <div class="hamburger-line"></div>
+                        <div class="hamburger-line"></div>
+                        <div class="hamburger-line"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Navigation -->
+    <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
+    <div class="mobile-nav" id="mobileNav">
+        <ul class="mobile-nav-links">
+            <li><a href="#beranda" class="active"><i class="fas fa-home"></i> Beranda</a></li>
+            <li><a href="#edukasi"><i class="fas fa-book"></i> Edukasi</a></li>
+            <li><a href="#kalender"><i class="fas fa-calendar"></i> Kalender</a></li>
+            <li><a href="#peta"><i class="fas fa-map-marker-alt"></i> Peta Rumah Sakit</a></li>
+            <li><a href="#kalkulator"><i class="fas fa-calculator"></i> Kalkulator Kesehatan</a></li>
+            <li><a href="#ai"><i class="fas fa-robot"></i> AI Assistant</a></li>
+        </ul>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero" id="beranda">
+        <div class="container">
+            <h1>Kelola Kesehatan Keluarga dengan AI</h1>
+            <p>Fam-space adalah platform kesehatan berbasis AI yang menyederhanakan pengelolaan kesehatan untuk remaja, calon pengantin, dan lansia. Akses mudah tanpa instalasi, cocok untuk semua usia.</p>
+            <a href="#edukasi" class="cta-button">Jelajahi Fitur</a>
+        </div>
+    </section>
+
+    <!-- User Groups Section -->
+    <section class="user-groups" id="edukasi">
+        <div class="container">
+            <h2 class="section-title">Kelompok Pengguna</h2>
+            <div class="groups-container">
+                <!-- Remaja Card -->
+                <div class="group-card">
+                    <div class="group-header group-remaja">
+                        <div class="group-icon">
+                            <i class="fas fa-user-graduate"></i>
+                        </div>
+                        <h3 class="group-title">Remaja</h3>
+                    </div>
+                    <div class="group-features">
+                        <ul>
+                            <li><i class="fas fa-calendar-alt feature-icon"></i> Kalender Menstruasi</li>
+                            <li><i class="fas fa-pills feature-icon"></i> Kalender Tablet Tambah Darah</li>
+                            <li><i class="fas fa-ruler feature-icon"></i> Indikator Pengukur LILA</li>
+                            <li><i class="fas fa-book feature-icon"></i> Edukasi Kesehatan Reproduksi</li>
+                        </ul>
+                        <div class="feature-btn-container">
+                            <button class="calculator-btn" onclick="openFeature('remaja')">Akses Fitur</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Calon Pengantin Card -->
+                <div class="group-card">
+                    <div class="group-header group-catin">
+                        <div class="group-icon">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <h3 class="group-title">Calon Pengantin</h3>
+                    </div>
+                    <div class="group-features">
+                        <ul>
+                            <li><i class="fas fa-egg feature-icon"></i> Kalender Masa Subur</li>
+                            <li><i class="fas fa-baby feature-icon"></i> Edukasi KB Pria & Wanita</li>
+                            <li><i class="fas fa-home feature-icon"></i> Edukasi 8 Fungsi Keluarga</li>
+                            <li><i class="fas fa-check-circle feature-icon"></i> Edukasi 10 Dimensi Kesiapan Berkeluarga</li>
+                        </ul>
+                        <div class="feature-btn-container">
+                            <button class="calculator-btn" onclick="openFeature('catin')">Akses Fitur</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Lansia Card -->
+                <div class="group-card">
+                    <div class="group-header group-lansia">
+                        <div class="group-icon">
+                            <i class="fas fa-user-friends"></i>
+                        </div>
+                        <h3 class="group-title">Lansia</h3>
+                    </div>
+                    <div class="group-features">
+                        <ul>
+                            <li><i class="fas fa-bell feature-icon"></i> Alarm Minum Obat</li>
+                            <li><i class="fas fa-heartbeat feature-icon"></i> Prediksi Detak Jantung Normal</li>
+                            <li><i class="fas fa-walking feature-icon"></i> Rekomendasi Aktivitas Fisik</li>
+                            <li><i class="fas fa-map-marker-alt feature-icon"></i> Deteksi Rumah Sakit Terdekat</li>
+                        </ul>
+                        <div class="feature-btn-container">
+                            <button class="calculator-btn" onclick="openFeature('lansia')">Akses Fitur</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Calendar Section -->
+    <section class="features" id="kalender">
+        <div class="container">
+            <h2 class="section-title">Kalender Kesehatan</h2>
+            <p class="section-subtitle">Kelola jadwal kesehatan Anda dengan kalender interaktif</p>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon-large">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <h3 class="feature-title">Kalender Menstruasi</h3>
+                    <p>Pantau siklus menstruasi, prediksi periode berikutnya, dan identifikasi masa subur dengan kalender interaktif.</p>
+                    <button class="calculator-btn" onclick="openFeature('remaja')">Buka Kalender</button>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon-large">
+                        <i class="fas fa-pills"></i>
+                    </div>
+                    <h3 class="feature-title">Kalender Tablet Tambah Darah</h3>
+                    <p>Atur pengingat minum tablet tambah darah untuk mencegah anemia, khususnya bagi remaja putri.</p>
+                    <button class="calculator-btn" onclick="openFeature('remaja')">Atur Pengingat</button>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon-large">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <h3 class="feature-title">Alarm Minum Obat</h3>
+                    <p>Jadwalkan pengingat minum obat untuk lansia dengan berbagai frekuensi sesuai kebutuhan.</p>
+                    <button class="calculator-btn" onclick="openFeature('lansia')">Atur Alarm</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Maps Section -->
+    <section class="maps-section" id="peta">
+        <div class="container">
+            <h2 class="section-title">Peta Rumah Sakit</h2>
+            <p class="section-subtitle">Temukan fasilitas kesehatan terdekat di seluruh Indonesia</p>
+            
+            <div class="map-container">
+                <div class="search-box">
+                    <input type="text" id="hospitalSearch" placeholder="Cari rumah sakit di Bali...">
+                    <button onclick="searchHospital()"><i class="fas fa-search"></i></button>
+                </div>
+                <div id="healthcare-map"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Calculators Section -->
+    <section class="calculators" id="kalkulator">
+        <div class="container">
+            <h2 class="section-title">Kalkulator Kesehatan</h2>
+            <p class="section-subtitle">Hitung dan pantau indikator kesehatan penting</p>
+            
+            <div class="calculators-grid">
+                <div class="calculator-card">
+                    <div class="calculator-icon">
+                        <i class="fas fa-weight"></i>
+                    </div>
+                    <h3>Kalkulator BMI</h3>
+                    <p>Hitung Indeks Massa Tubuh untuk mengetahui status berat badan Anda.</p>
+                    <button class="calculator-btn" onclick="openCalculator('bmi')">Hitung Sekarang</button>
+                </div>
+                
+                <div class="calculator-card">
+                    <div class="calculator-icon">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <h3>Kalkulator Denyut Jantung</h3>
+                    <p>Hitung denyut jantung maksimal berdasarkan usia.</p>
+                    <button class="calculator-btn" onclick="openCalculator('heart')">Hitung Sekarang</button>
+                </div>
+                
+                <div class="calculator-card">
+                    <div class="calculator-icon">
+                        <i class="fas fa-utensils"></i>
+                    </div>
+                    <h3>Kalkulator Kalori</h3>
+                    <p>Hitung kebutuhan kalori harian berdasarkan usia, berat badan, dan aktivitas.</p>
+                    <button class="calculator-btn" onclick="openCalculator('calorie')">Hitung Sekarang</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chatbot Section -->
+    <section class="chatbot-section" id="ai">
+        <div class="container">
+            <div class="chatbot-container">
+                <div class="chatbot-image">
+                    <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="AI Health Chatbot">
+                </div>
+                <div class="chatbot-content">
+                    <h2 class="chatbot-title">AI Health Assistant</h2>
+                    <p class="chatbot-desc">Dapatkan jawaban instan untuk pertanyaan kesehatan Anda. Chatbot kami menggunakan teknologi AI untuk memberikan informasi yang akurat dan sesuai dengan kebutuhan usia Anda, baik tentang menstruasi, KB, gizi, lansia, atau pola hidup sehat.</p>
+                    <button class="chatbot-button" onclick="openFeature('ai')">
+                        <i class="fas fa-comment-alt"></i> Mulai Konsultasi
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>Fam-space</h3>
+                    <p>Platform kesehatan keluarga berbasis AI yang menyederhanakan pengelolaan kesehatan untuk remaja, calon pengantin, dan lansia.</p>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Fitur Utama</h3>
+                    <ul class="footer-links">
+                        <li><a href="#edukasi">Edukasi Kesehatan</a></li>
+                        <li><a href="#kalender">Kalender Kesehatan</a></li>
+                        <li><a href="#peta">Peta Rumah Sakit</a></li>
+                        <li><a href="#kalkulator">Kalkulator Kesehatan</a></li>
+                        <li><a href="#ai">AI Assistant</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Kontak</h3>
+                    <ul class="footer-links">
+                        <li><i class="fas fa-envelope"></i> info@famspace.id</li>
+                        <li><i class="fas fa-phone"></i> +62 21 1234 5678</li>
+                        <li><i class="fas fa-map-marker-alt"></i> Jakarta, Indonesia</li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Dukungan</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Bantuan</a></li>
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Kebijakan Privasi</a></li>
+                        <li><a href="#">Syarat & Ketentuan</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                <p>&copy; 2025 Fam-space. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Feature Popup -->
+    <div class="popup-overlay" id="featurePopup">
+        <div class="popup" id="featureContent">
+            <div class="popup-header">
+                <h3><i class="fas fa-heartbeat"></i> <span id="featureTitle">Fitur Kesehatan</span></h3>
+                <button class="popup-close" id="featureClose">&times;</button>
+            </div>
+            <div class="popup-body">
+                <div id="featureBody">
+                    <!-- Konten fitur akan diisi oleh JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calculator Popup -->
+    <div class="popup-overlay" id="calculatorPopup">
+        <div class="popup" id="popupContent">
+            <div class="popup-header">
+                <h3><i class="fas fa-calculator"></i> <span id="popupTitle">Kalkulator</span></h3>
+                <button class="popup-close" id="popupClose">&times;</button>
+            </div>
+            <div class="popup-body">
+                <div class="calculator-form" id="calculatorForm">
+                    <!-- Form akan diisi oleh JavaScript -->
+                </div>
+                <div class="calculator-result" id="calculatorResult">
+                    <!-- Hasil akan diisi oleh JavaScript -->
+                </div>
+            </div>
+            <div class="popup-footer">
+                <button class="calculator-btn" id="resetCalculator">Reset</button>
+                <button class="calculator-btn" id="calculateBtn">Hitung</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- i-Doc Chatbot -->
+    <div id="n8n-chat"></div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script type="module">
+        import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
+
+        createChat({
+            webhookUrl: 'https://agung121.app.n8n.cloud/webhook/b4fc0e28-60e3-4a1b-94f6-5f8328d04de2/chat',
+            webhookConfig: {
+                method: 'POST',
+                headers: {}
+            },
+            target: '#n8n-chat',
+            mode: 'window',
+            chatInputKey: 'chatInput',
+            chatSessionKey: 'sessionId',
+            loadPreviousSession: true,
+            metadata: {},
+            showWelcomeScreen: false,
+            defaultLanguage: 'en',
+            initialMessages: [
+                'Hi Sobat!',
+                'Halo! Saya i-Doc, asisten kesehatan AI Anda. Ada yang bisa saya bantu hari ini?'
+            ],
+            i18n: {
+                en: {
+                    title: '🤖I-doc',
+                    subtitle: 'Mulai berbincang dengan asistenmu!',
+                    footer: '',
+                    getStarted: 'New Conversation',
+                    inputPlaceholder: 'Ketik pertanyaanmu di sini...',
+                },
+            },
+            enableStreaming: false,
+        });
+    </script>
+    <script>
+        // ========== VARIABEL GLOBAL ==========
+        let healthcareMap;
+        let healthcareMarkers = [];
+        let currentPeriodDates = [];
+        let predictedPeriodDates = [];
+        let fertileDates = [];
+        let alarms = [];
+        let alarmInterval;
+        let ttdReminders = [];
+
+        // ========== INISIALISASI PETA INDONESIA ==========
+        function initMap() {
+            // Inisialisasi peta dengan view ke Indonesia
+            healthcareMap = L.map('healthcare-map').setView([-2.5489, 118.0149], 5);
+            
+            // Tambahkan tile layer dari OpenStreetMap
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(healthcareMap);
+            
+            // Data rumah sakit di Bali (contoh)
+            const baliHospitals = [
+                { name: "RSUP Sanglah Denpasar", lat: -8.6819, lng: 115.2160 },
+                { name: "RSUD Sanjiwani Gianyar", lat: -8.5368, lng: 115.3225 },
+                { name: "RSUD Tabanan", lat: -8.5393, lng: 115.1212 },
+                { name: "RSUD Bangli", lat: -8.4546, lng: 115.3541 },
+                { name: "RSUD Klungkung", lat: -8.5389, lng: 115.4053 },
+                { name: "RSUD Buleleng", lat: -8.1155, lng: 115.0922 },
+                { name: "RS Prima Medika Denpasar", lat: -8.6564, lng: 115.2226 },
+                { name: "RS Bali Mandara Denpasar", lat: -8.6968, lng: 115.2175 },
+                { name: "RS Kasih Ibu Denpasar", lat: -8.6693, lng: 115.2191 },
+                { name: "RS Surya Husada Denpasar", lat: -8.6569, lng: 115.2139 }
+            ];
+            
+            // Tambahkan marker untuk setiap rumah sakit di Bali
+            baliHospitals.forEach(hospital => {
+                const marker = L.marker([hospital.lat, hospital.lng])
+                    .addTo(healthcareMap)
+                    .bindPopup(`<b>${hospital.name}</b><br><button onclick="showDirections(${hospital.lat}, ${hospital.lng})" class="calculator-btn" style="margin-top: 10px;">Dapatkan Rute</button>`);
+                
+                healthcareMarkers.push({
+                    marker: marker,
+                    name: hospital.name.toLowerCase()
+                });
+            });
+            
+            // Coba dapatkan lokasi pengguna
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    position => {
+                        const userLat = position.coords.latitude;
+                        const userLng = position.coords.longitude;
+                        
+                        // Tambahkan marker untuk lokasi pengguna
+                        L.marker([userLat, userLng])
+                            .addTo(healthcareMap)
+                            .bindPopup('<b>Lokasi Anda</b>')
+                            .openPopup();
+                            
+                        // Pusatkan peta ke lokasi pengguna
+                        healthcareMap.setView([userLat, userLng], 13);
+                    },
+                    error => {
+                        console.log("Tidak dapat mendapatkan lokasi pengguna: ", error);
+                    }
+                );
+            }
+        }
+        
+        // ========== FUNGSI PENCARIAN RUMAH SAKIT ==========
+        function searchHospital() {
+            const searchTerm = document.getElementById('hospitalSearch').value.toLowerCase();
+            
+            if (!searchTerm) {
+                alert('Masukkan nama rumah sakit yang ingin dicari');
+                return;
+            }
+            
+            let found = false;
+            
+            healthcareMarkers.forEach(item => {
+                if (item.name.includes(searchTerm)) {
+                    healthcareMap.setView(item.marker.getLatLng(), 15);
+                    item.marker.openPopup();
+                    found = true;
+                }
+            });
+            
+            if (!found) {
+                alert('Rumah sakit tidak ditemukan. Coba kata kunci lain.');
+            }
+        }
+        
+        // ========== FUNGSI UNTUK MENAMPILKAN RUTE ==========
+        function showDirections(lat, lng) {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    const userLat = position.coords.latitude;
+                    const userLng = position.coords.longitude;
+                    
+                    // Buka Google Maps dengan rute dari lokasi pengguna ke rumah sakit
+                    const url = `https://www.google.com/maps/dir/${userLat},${userLng}/${lat},${lng}`;
+                    window.open(url, '_blank');
+                });
+            } else {
+                // Fallback ke koordinat rumah sakit saja
+                const url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+                window.open(url, '_blank');
+            }
+        }
+        
+        // ========== FUNGSI MOBILE NAVIGATION ==========
+        function toggleMobileMenu() {
+            const hamburgerMenu = document.getElementById('hamburgerMenu');
+            const mobileNav = document.getElementById('mobileNav');
+            const mobileNavOverlay = document.getElementById('mobileNavOverlay');
+            
+            hamburgerMenu.classList.toggle('active');
+            mobileNav.classList.toggle('active');
+            mobileNavOverlay.classList.toggle('active');
+        }
+        
+        function closeMobileMenu() {
+            const hamburgerMenu = document.getElementById('hamburgerMenu');
+            const mobileNav = document.getElementById('mobileNav');
+            const mobileNavOverlay = document.getElementById('mobileNavOverlay');
+            
+            hamburgerMenu.classList.remove('active');
+            mobileNav.classList.remove('active');
+            mobileNavOverlay.classList.remove('active');
+        }
+        
+        // ========== FUNGSI FITUR UTAMA ==========
+        function openFeature(featureType) {
+            const featurePopup = document.getElementById('featurePopup');
+            const featureContent = document.getElementById('featureContent');
+            const featureTitle = document.getElementById('featureTitle');
+            const featureBody = document.getElementById('featureBody');
+            
+            switch(featureType) {
+                case 'remaja':
+                    featureTitle.textContent = 'Fitur Kesehatan Remaja';
+                    setRemajaFeatures(featureBody);
+                    break;
+                case 'catin':
+                    featureTitle.textContent = 'Fitur Calon Pengantin';
+                    setCatinFeatures(featureBody);
+                    break;
+                case 'lansia':
+                    featureTitle.textContent = 'Fitur Kesehatan Lansia';
+                    setLansiaFeatures(featureBody);
+                    break;
+                case 'ai':
+                    featureTitle.textContent = 'AI Health Assistant';
+                    setAIFeatures(featureBody);
+                    break;
+            }
+            
+            // Tampilkan popup
+            featurePopup.classList.add('active');
+            featureContent.classList.add('active');
+        }
+        
+        function closeFeaturePopup() {
+            const featurePopup = document.getElementById('featurePopup');
+            const featureContent = document.getElementById('featureContent');
+            
+            featurePopup.classList.remove('active');
+            featureContent.classList.remove('active');
+        }
+        
+        // ========== FITUR REMAJA ==========
+        function setRemajaFeatures(container) {
+            container.innerHTML = `
+                <div class="tabs">
+                    <div class="tab active" onclick="switchTab('menstruasi')">Kalender Menstruasi</div>
+                    <div class="tab" onclick="switchTab('ttd')">Tablet Tambah Darah</div>
+                    <div class="tab" onclick="switchTab('lila')">Pengukur LILA</div>
+                    <div class="tab" onclick="switchTab('edukasi')">Edukasi</div>
+                </div>
+                
+                <div id="menstruasi" class="tab-content active">
+                    <h4>Kalender Menstruasi</h4>
+                    <div class="form-group">
+                        <label for="lastPeriod">Tanggal Mulai Menstruasi Terakhir</label>
+                        <input type="date" id="lastPeriod">
+                    </div>
+                    <div class="form-group">
+                        <label for="cycleLength">Panjang Siklus (hari)</label>
+                        <input type="number" id="cycleLength" value="28" min="21" max="35">
+                    </div>
+                    <button class="calculator-btn" onclick="generateMenstrualCalendar()">Buat Kalender</button>
+                    <div id="menstrualCalendar" class="calendar-container" style="margin-top: 20px;"></div>
+                </div>
+                
+                <div id="ttd" class="tab-content">
+                    <h4>Kalender Tablet Tambah Darah (TTD)</h4>
+                    <p>Atur pengingat untuk minum tablet tambah darah setiap minggu:</p>
+                    <div class="form-group">
+                        <label for="ttdDay">Hari Minum TTD</label>
+                        <select id="ttdDay">
+                            <option value="1">Senin</option>
+                            <option value="2">Selasa</option>
+                            <option value="3">Rabu</option>
+                            <option value="4">Kamis</option>
+                            <option value="5">Jumat</option>
+                            <option value="6">Sabtu</option>
+                            <option value="0">Minggu</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="ttdTime">Waktu Minum</label>
+                        <input type="time" id="ttdTime">
+                    </div>
+                    <button class="calculator-btn" onclick="setTTDReminder()">Atur Pengingat</button>
+                    <div id="ttdReminders" class="alarm-container" style="margin-top: 20px;"></div>
+                </div>
+                
+                <div id="lila" class="tab-content">
+                    <h4>Indikator Pengukur LILA</h4>
+                    <p>Lingkar Lengan Atas (LILA) adalah indikator status gizi. Ukur lingkar lengan kiri bagian tengah antara bahu dan siku.</p>
+                    <div class="form-group">
+                        <label for="lilaMeasurement">Lingkar Lengan Atas (cm)</label>
+                        <input type="number" id="lilaMeasurement" step="0.1" min="10" max="50">
+                    </div>
+                    <button class="calculator-btn" onclick="checkLILA()">Periksa Status Gizi</button>
+                    <div id="lilaResult" class="calculator-result"></div>
+                </div>
+                
+                <div id="edukasi" class="tab-content">
+                    <div class="education-content">
+                        <h4>Edukasi Kesehatan Reproduksi Remaja</h4>
+                        <div class="education-section">
+                            <h5>Perubahan Fisik Masa Pubertas</h5>
+                            <ul>
+                                <li>Perubahan tinggi dan berat badan</li>
+                                <li>Tumbuhnya rambut di area tertentu</li>
+                                <li>Perubahan suara (pada laki-laki)</li>
+                                <li>Pertumbuhan payudara (pada perempuan)</li>
+                                <li>Menstruasi pertama (pada perempuan)</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="education-section">
+                            <h5>Kesehatan Menstruasi</h5>
+                            <ul>
+                                <li>Ganti pembalut setiap 4-6 jam</li>
+                                <li>Jaga kebersihan area kewanitaan</li>
+                                <li>Catat siklus menstruasi</li>
+                                <li>Konsumsi makanan bergizi selama menstruasi</li>
+                                <li>Lakukan aktivitas fisik ringan</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="education-section">
+                            <h5>Pencegahan Anemia</h5>
+                            <ul>
+                                <li>Konsumsi tablet tambah darah seminggu sekali</li>
+                                <li>Makan makanan kaya zat besi (daging, hati, bayam)</li>
+                                <li>Konsumsi vitamin C untuk penyerapan zat besi</li>
+                                <li>Hindari minum teh bersamaan dengan makanan kaya zat besi</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // ========== FITUR CALON PENGANTIN ==========
+        function setCatinFeatures(container) {
+            container.innerHTML = `
+                <div class="tabs">
+                    <div class="tab active" onclick="switchTab('ovulasi')">Masa Subur</div>
+                    <div class="tab" onclick="switchTab('kb')">Keluarga Berencana</div>
+                    <div class="tab" onclick="switchTab('fungsi')">Fungsi Keluarga</div>
+                    <div class="tab" onclick="switchTab('kesiapan')">Kesiapan Berkeluarga</div>
+                </div>
+                
+                <div id="ovulasi" class="tab-content active">
+                    <h4>Kalender Masa Subur</h4>
+                    <p>Masa subur adalah periode ketika kemungkinan hamil paling tinggi. Biasanya terjadi sekitar 14 hari sebelum menstruasi berikutnya.</p>
+                    <div class="form-group">
+                        <label for="catLastPeriod">Tanggal Mulai Menstruasi Terakhir</label>
+                        <input type="date" id="catLastPeriod">
+                    </div>
+                    <div class="form-group">
+                        <label for="catCycleLength">Panjang Siklus (hari)</label>
+                        <input type="number" id="catCycleLength" value="28" min="21" max="35">
+                    </div>
+                    <button class="calculator-btn" onclick="calculateFertilePeriod()">Hitung Masa Subur</button>
+                    <div id="fertileResult" class="calculator-result" style="margin-top: 20px;"></div>
+                </div>
+                
+                <div id="kb" class="tab-content">
+                    <div class="education-content">
+                        <h4>Edukasi Keluarga Berencana</h4>
+                        
+                        <div class="education-section">
+                            <h5>Metode KB Hormonal</h5>
+                            <ul>
+                                <li><strong>Pil KB:</strong> Dikonsumsi setiap hari, efektivitas tinggi</li>
+                                <li><strong>Suntik KB:</strong> Disuntik setiap 1-3 bulan</li>
+                                <li><strong>Implan:</strong> Ditanam di bawah kulit, bertahan 3-5 tahun</li>
+                                <li><strong>IUD Hormonal:</strong> Dipasang di rahim, bertahan 3-7 tahun</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="education-section">
+                            <h5>Metode KB Non-Hormonal</h5>
+                            <ul>
+                                <li><strong>Kondom:</strong> Pria/wanita, juga mencegah PMS</li>
+                                <li><strong>IUD Tembaga:</strong> Dipasang di rahim, bertahan 10 tahun</li>
+                                <li><strong>KB Alamiah:</strong> Pantang berkala, perlu kedisiplinan tinggi</li>
+                                <li><strong>Vasektomi/Tubektomi:</strong> Metode permanen</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="fungsi" class="tab-content">
+                    <div class="education-content">
+                        <h4>8 Fungsi Keluarga</h4>
+                        
+                        <div class="education-section">
+                            <h5>1. Fungsi Keagamaan</h5>
+                            <p>Keluarga sebagai tempat pertama dan utama penanaman nilai-nilai agama dan spiritual.</p>
+                        </div>
+                        
+                        <div class="education-section">
+                            <h5>2. Fungsi Sosial Budaya</h5>
+                            <p>Keluarga mewariskan nilai-nilai sosial dan budaya kepada anggotanya.</p>
+                        </div>
+                        
+                        <div class="education-section">
+                            <h5>3. Fungsi Cinta Kasih</h5>
+                            <p>Memberikan kasih sayang dan dukungan emosional kepada seluruh anggota keluarga.</p>
+                        </div>
+                        
+                        <div class="education-section">
+                            <h5>4. Fungsi Perlindungan</h5>
+                            <p>Memberikan rasa aman dan perlindungan fisik maupun psikologis.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="kesiapan" class="tab-content">
+                    <div class="education-content">
+                        <h4>10 Dimensi Kesiapan Berkeluarga</h4>
+                        
+                        <div class="education-section">
+                            <h5>1. Kesiapan Fisik</h5>
+                            <p>Kondisi kesehatan yang optimal untuk menjalani kehidupan berkeluarga.</p>
+                        </div>
+                        
+                        <div class="education-section">
+                            <h5>2. Kesiapan Finansial</h5>
+                            <p>Kemampuan ekonomi yang memadai untuk memenuhi kebutuhan keluarga.</p>
+                        </div>
+                        
+                        <div class="education-section">
+                            <h5>3. Kesiapan Mental-Emosional</h5>
+                            <p>Kedewasaan emosi dan kestabilan mental dalam menghadapi masalah.</p>
+                        </div>
+                        
+                        <div class="education-section">
+                            <h5>4. Kesiapan Spiritual</h5>
+                            <p>Pemahaman dan pengamalan nilai-nilai agama dalam kehidupan.</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // ========== FITUR LANSIA ==========
+        function setLansiaFeatures(container) {
+            container.innerHTML = `
+                <div class="tabs">
+                    <div class="tab active" onclick="switchTab('alarm')">Alarm Obat</div>
+                    <div class="tab" onclick="switchTab('jantung')">Detak Jantung</div>
+                    <div class="tab" onclick="switchTab('aktivitas')">Aktivitas Fisik</div>
+                    <div class="tab" onclick="switchTab('rs')">Rumah Sakit</div>
+                </div>
+                
+                <div id="alarm" class="tab-content active">
+                    <h4>Alarm Minum Obat</h4>
+                    <div class="form-group">
+                        <label for="medicineName">Nama Obat</label>
+                        <input type="text" id="medicineName" placeholder="Masukkan nama obat">
+                    </div>
+                    <div class="form-group">
+                        <label for="alarmTime">Waktu Alarm</label>
+                        <input type="time" id="alarmTime">
+                    </div>
+                    <div class="form-group">
+                        <label for="alarmFrequency">Frekuensi</label>
+                        <select id="alarmFrequency">
+                            <option value="once">Sekali Sehari</option>
+                            <option value="twice">Dua Kali Sehari</option>
+                            <option value="thrice">Tiga Kali Sehari</option>
+                        </select>
+                    </div>
+                    <button class="calculator-btn" onclick="addAlarm()">Tambah Alarm</button>
+                    <div class="alarm-container" id="alarmList" style="margin-top: 20px;"></div>
+                </div>
+                
+                <div id="jantung" class="tab-content">
+                    <h4>Prediksi Detak Jantung Normal</h4>
+                    <p>Detak jantung normal untuk lansia berkisar antara 60-100 denyut per menit (bpm). Detak jantung maksimal dapat dihitung berdasarkan usia.</p>
+                    <div class="form-group">
+                        <label for="elderAge">Usia (tahun)</label>
+                        <input type="number" id="elderAge" min="60" max="120">
+                    </div>
+                    <button class="calculator-btn" onclick="calculateElderHeartRate()">Hitung Detak Jantung</button>
+                    <div id="heartRateResult" class="calculator-result" style="margin-top: 20px;"></div>
+                </div>
+                
+                <div id="aktivitas" class="tab-content">
+                    <div class="education-content">
+                        <h4>Rekomendasi Aktivitas Fisik untuk Lansia</h4>
+                        
+                        <div class="education-section">
+                            <h5>Aktivitas Harian</h5>
+                            <ul>
+                                <li><strong>Jalan kaki:</strong> 30 menit sehari, 5 kali seminggu</li>
+                                <li><strong>Bersepeda statis:</strong> 15-20 menit, 3 kali seminggu</li>
+                                <li><strong>Senam lansia:</strong> 30 menit, 3 kali seminggu</li>
+                                <li><strong>Berenang:</strong> 20-30 menit, 2 kali seminggu</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="rs" class="tab-content">
+                    <h4>Deteksi Rumah Sakit Terdekat</h4>
+                    <p>Gunakan fitur ini untuk menemukan rumah sakit terdekat dengan layanan yang sesuai kebutuhan lansia.</p>
+                    <div style="text-align: center; margin: 20px 0;">
+                        <button class="calculator-btn" onclick="closeFeaturePopup(); document.getElementById('peta').scrollIntoView({behavior: 'smooth'})">Buka Peta Rumah Sakit</button>
+                    </div>
+                </div>
+            `;
+            
+            // Tampilkan alarm yang sudah ada
+            displayAlarms();
+        }
+        
+        // ========== FITUR AI ASSISTANT ==========
+        function setAIFeatures(container) {
+            container.innerHTML = `
+                <h4>AI Health Assistant</h4>
+                <p>Dapatkan jawaban instan untuk pertanyaan kesehatan Anda. Chatbot kami menggunakan teknologi AI untuk memberikan informasi yang akurat dan sesuai dengan kebutuhan usia Anda.</p>
+                
+                <div id="aiChatContainer" style="margin-top: 20px;">
+                    <div style="border: 1px solid var(--light-gray); border-radius: 10px; height: 300px; overflow-y: auto; padding: 15px; margin-bottom: 15px;" id="aiChatMessages">
+                        <div class="message bot-message">
+                            Halo! Saya AI Health Assistant. Ada yang bisa saya bantu terkait kesehatan Anda?
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="aiChatInput" placeholder="Ketik pertanyaan Anda..." style="flex: 1; padding: 10px; border: 1px solid var(--light-gray); border-radius: 5px;">
+                        <button class="calculator-btn" onclick="sendAIMessage()">Kirim</button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function sendAIMessage() {
+            const input = document.getElementById('aiChatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Tambahkan pesan pengguna
+            addAIMessage(message, 'user');
+            input.value = '';
+            
+            // Simulasi respons AI
+            setTimeout(() => {
+                let response = getAIResponse(message);
+                addAIMessage(response, 'bot');
+            }, 1000);
+        }
+        
+        function addAIMessage(text, sender) {
+            const messagesContainer = document.getElementById('aiChatMessages');
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+            messageElement.classList.add(sender === 'user' ? 'user-message' : 'bot-message');
+            messageElement.textContent = text;
+            
+            messagesContainer.appendChild(messageElement);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        function getAIResponse(message) {
+            const lowerMessage = message.toLowerCase();
+            
+            if (lowerMessage.includes('hai') || lowerMessage.includes('halo') || lowerMessage.includes('hello')) {
+                return 'Halo! Saya AI Health Assistant. Ada yang bisa saya bantu terkait kesehatan Anda?';
+            } else if (lowerMessage.includes('menstruasi') || lowerMessage.includes('haid') || lowerMessage.includes('datang bulan')) {
+                return 'Untuk informasi menstruasi, Anda dapat menggunakan fitur Kalender Menstruasi di bagian Remaja. Saya bisa membantu mencatat siklus menstruasi Anda.';
+            } else if (lowerMessage.includes('kb') || lowerMessage.includes('keluarga berencana')) {
+                return 'Informasi tentang Keluarga Berencana tersedia di bagian Calon Pengantin. Saya bisa menjelaskan berbagai metode KB yang tersedia.';
+            } else if (lowerMessage.includes('obat') || lowerMessage.includes('minum obat')) {
+                return 'Anda dapat mengatur alarm minum obat di bagian Lansia. Beritahu saya jadwal minum obat Anda, saya akan membantu mengingatkannya.';
+            } else if (lowerMessage.includes('rumah sakit') || lowerMessage.includes('dokter')) {
+                return 'Gunakan fitur Peta Rumah Sakit untuk menemukan fasilitas kesehatan terdekat. Atau beri tahu saya lokasi Anda, saya bisa membantu mencari rumah sakit terdekat.';
+            } else if (lowerMessage.includes('darah') || lowerMessage.includes('anemia')) {
+                return 'Tablet Tambah Darah (TTD) penting untuk mencegah anemia. Fitur Remaja memiliki pengingat minum TTD. Minumlah secara teratur sesuai anjuran.';
+            } else if (lowerMessage.includes('lansia') || lowerMessage.includes('usia tua')) {
+                return 'Untuk kesehatan lansia, kami menyediakan fitur alarm obat, monitoring detak jantung, dan rekomendasi aktivitas fisik. Ada yang spesifik ingin Anda tanyakan?';
+            } else if (lowerMessage.includes('terima kasih') || lowerMessage.includes('thanks')) {
+                return 'Sama-sama! Jaga selalu kesehatan Anda. Jika ada pertanyaan lain, jangan ragu untuk bertanya.';
+            } else {
+                return 'Maaf, saya tidak mengerti pertanyaan Anda. Coba tanyakan tentang menstruasi, KB, obat, rumah sakit, atau topik kesehatan lainnya.';
+            }
+        }
+        
+        // ========== FUNGSI TAB ==========
+        function switchTab(tabName) {
+            // Sembunyikan semua tab content
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Hapus status active dari semua tab
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Tampilkan tab yang dipilih
+            document.getElementById(tabName).classList.add('active');
+            
+            // Set tab yang aktif
+            event.target.classList.add('active');
+        }
+        
+        // ========== FUNGSI REMAJA ==========
+        function generateMenstrualCalendar() {
+            const lastPeriod = new Date(document.getElementById('lastPeriod').value);
+            const cycleLength = parseInt(document.getElementById('cycleLength').value);
+            
+            if (!lastPeriod || isNaN(lastPeriod.getTime())) {
+                alert('Harap pilih tanggal menstruasi terakhir.');
+                return;
+            }
+            
+            // Reset tanggal
+            currentPeriodDates = [];
+            predictedPeriodDates = [];
+            fertileDates = [];
+            
+            // Tambahkan tanggal periode saat ini
+            for (let i = 0; i < 5; i++) {
+                const date = new Date(lastPeriod);
+                date.setDate(date.getDate() + i);
+                currentPeriodDates.push(new Date(date));
+            }
+            
+            // Prediksi periode berikutnya
+            const nextPeriod = new Date(lastPeriod);
+            nextPeriod.setDate(nextPeriod.getDate() + cycleLength);
+            
+            for (let i = 0; i < 5; i++) {
+                const date = new Date(nextPeriod);
+                date.setDate(date.getDate() + i);
+                predictedPeriodDates.push(new Date(date));
+            }
+            
+            // Hitung masa subur (ovulasi sekitar 14 hari sebelum periode berikutnya)
+            const ovulationDate = new Date(nextPeriod);
+            ovulationDate.setDate(ovulationDate.getDate() - 14);
+            
+            for (let i = -3; i <= 3; i++) {
+                const date = new Date(ovulationDate);
+                date.setDate(date.getDate() + i);
+                fertileDates.push(new Date(date));
+            }
+            
+            // Tampilkan kalender
+            displayMenstrualCalendar();
+        }
+        
+        function displayMenstrualCalendar() {
+            const calendarContainer = document.getElementById('menstrualCalendar');
+            calendarContainer.innerHTML = '';
+            
+            const today = new Date();
+            const startDate = new Date(today);
+            startDate.setDate(startDate.getDate() - 15);
+            
+            // Header hari
+            const days = ['M', 'S', 'S', 'R', 'K', 'J', 'S'];
+            days.forEach(day => {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                dayElement.textContent = day;
+                dayElement.style.fontWeight = 'bold';
+                dayElement.style.background = 'var(--dark-pink)';
+                dayElement.style.color = 'white';
+                calendarContainer.appendChild(dayElement);
+            });
+            
+            // Buat kalender 42 hari (6 minggu)
+            for (let i = 0; i < 42; i++) {
+                const date = new Date(startDate);
+                date.setDate(date.getDate() + i);
+                
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                dayElement.textContent = date.getDate();
+                
+                // Tandai periode saat ini
+                if (currentPeriodDates.some(d => d.toDateString() === date.toDateString())) {
+                    dayElement.classList.add('period');
+                    dayElement.title = 'Periode Menstruasi';
+                }
+                
+                // Tandai periode prediksi
+                if (predictedPeriodDates.some(d => d.toDateString() === date.toDateString())) {
+                    dayElement.classList.add('predicted');
+                    dayElement.title = 'Periode Prediksi';
+                }
+                
+                // Tandai masa subur
+                if (fertileDates.some(d => d.toDateString() === date.toDateString())) {
+                    dayElement.classList.add('fertile');
+                    dayElement.title = 'Masa Subur';
+                }
+                
+                // Tandai hari ini
+                if (date.toDateString() === today.toDateString()) {
+                    dayElement.classList.add('today');
+                }
+                
+                // Tandai hari di bulan berbeda
+                if (date.getMonth() !== today.getMonth()) {
+                    dayElement.style.opacity = '0.5';
+                }
+                
+                calendarContainer.appendChild(dayElement);
+            }
+        }
+        
+        function setTTDReminder() {
+            const day = document.getElementById('ttdDay').value;
+            const time = document.getElementById('ttdTime').value;
+            
+            if (!time) {
+                alert('Harap pilih waktu minum TTD.');
+                return;
+            }
+            
+            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            const reminder = {
+                id: Date.now(),
+                day: parseInt(day),
+                dayName: days[parseInt(day)],
+                time: time,
+                active: true
+            };
+            
+            ttdReminders.push(reminder);
+            displayTTDReminders();
+            
+            alert(`Pengingat TTD diatur setiap ${days[parseInt(day)]} jam ${time}`);
+        }
+        
+        function displayTTDReminders() {
+            const ttdContainer = document.getElementById('ttdReminders');
+            ttdContainer.innerHTML = '';
+            
+            if (ttdReminders.length === 0) {
+                ttdContainer.innerHTML = '<p>Belum ada pengingat TTD yang diatur.</p>';
+                return;
+            }
+            
+            ttdReminders.forEach(reminder => {
+                const reminderItem = document.createElement('div');
+                reminderItem.className = 'alarm-item';
+                reminderItem.innerHTML = `
+                    <div>
+                        <div class="alarm-time">${reminder.dayName}, ${reminder.time}</div>
+                        <div>Tablet Tambah Darah</div>
+                    </div>
+                    <div class="alarm-actions">
+                        <button class="alarm-btn" onclick="deleteTTDReminder(${reminder.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                
+                ttdContainer.appendChild(reminderItem);
+            });
+        }
+        
+        function deleteTTDReminder(id) {
+            ttdReminders = ttdReminders.filter(r => r.id !== id);
+            displayTTDReminders();
+        }
+        
+        function checkLILA() {
+            const measurement = parseFloat(document.getElementById('lilaMeasurement').value);
+            
+            if (!measurement) {
+                alert('Harap masukkan pengukuran LILA.');
+                return;
+            }
+            
+            let status = '';
+            let color = '';
+            
+            if (measurement < 23.5) {
+                status = 'Kurang (Risiko KEK - Kurang Energi Kronis)';
+                color = '#FF7675';
+            } else {
+                status = 'Normal';
+                color = '#55EFC4';
+            }
+            
+            const result = document.getElementById('lilaResult');
+            result.innerHTML = `
+                <h4>Hasil Pengukuran LILA:</h4>
+                <div class="result-value">${measurement} cm</div>
+                <div class="result-category" style="background-color: ${color}">${status}</div>
+                <p style="margin-top: 15px;">Lingkar Lengan Atas (LILA) adalah indikator status gizi. Nilai normal ≥ 23.5 cm.</p>
+            `;
+            result.classList.add('active');
+        }
+        
+        // ========== FUNGSI CALON PENGANTIN ==========
+        function calculateFertilePeriod() {
+            const lastPeriod = new Date(document.getElementById('catLastPeriod').value);
+            const cycleLength = parseInt(document.getElementById('catCycleLength').value);
+            
+            if (!lastPeriod || isNaN(lastPeriod.getTime())) {
+                alert('Harap pilih tanggal menstruasi terakhir.');
+                return;
+            }
+            
+            // Hitung periode berikutnya
+            const nextPeriod = new Date(lastPeriod);
+            nextPeriod.setDate(nextPeriod.getDate() + cycleLength);
+            
+            // Hitung masa subur (ovulasi sekitar 14 hari sebelum periode berikutnya)
+            const ovulationDate = new Date(nextPeriod);
+            ovulationDate.setDate(ovulationDate.getDate() - 14);
+            
+            // Masa subur adalah 5 hari sebelum ovulasi hingga 1 hari setelah ovulasi
+            const fertileStart = new Date(ovulationDate);
+            fertileStart.setDate(fertileStart.getDate() - 5);
+            
+            const fertileEnd = new Date(ovulationDate);
+            fertileEnd.setDate(fertileEnd.getDate() + 1);
+            
+            const result = document.getElementById('fertileResult');
+            result.innerHTML = `
+                <h4>Hasil Perhitungan Masa Subur:</h4>
+                <p><strong>Periode Menstruasi Berikutnya:</strong> ${nextPeriod.toLocaleDateString('id-ID')}</p>
+                <p><strong>Perkiraan Ovulasi:</strong> ${ovulationDate.toLocaleDateString('id-ID')}</p>
+                <p><strong>Masa Subur:</strong> ${fertileStart.toLocaleDateString('id-ID')} - ${fertileEnd.toLocaleDateString('id-ID')}</p>
+                <p style="margin-top: 15px; font-style: italic;">Masa subur adalah periode ketika kemungkinan hamil paling tinggi. Untuk program hamil, disarankan berhubungan intim setiap hari selama masa subur.</p>
+            `;
+            result.classList.add('active');
+        }
+        
+        // ========== FUNGSI LANSIA ==========
+        function addAlarm() {
+            const medicineName = document.getElementById('medicineName').value;
+            const alarmTime = document.getElementById('alarmTime').value;
+            const frequency = document.getElementById('alarmFrequency').value;
+            
+            if (!medicineName || !alarmTime) {
+                alert('Harap isi nama obat dan waktu alarm.');
+                return;
+            }
+            
+            const alarm = {
+                id: Date.now(),
+                medicine: medicineName,
+                time: alarmTime,
+                frequency: frequency,
+                active: true
+            };
+            
+            alarms.push(alarm);
+            displayAlarms();
+            startAlarmCheck();
+            
+            // Reset form
+            document.getElementById('medicineName').value = '';
+            document.getElementById('alarmTime').value = '';
+        }
+        
+        function displayAlarms() {
+            const alarmList = document.getElementById('alarmList');
+            if (!alarmList) return;
+            
+            alarmList.innerHTML = '';
+            
+            if (alarms.length === 0) {
+                alarmList.innerHTML = '<p>Belum ada alarm yang ditambahkan.</p>';
+                return;
+            }
+            
+            alarms.forEach(alarm => {
+                const alarmItem = document.createElement('div');
+                alarmItem.className = 'alarm-item';
+                alarmItem.innerHTML = `
+                    <div>
+                        <div class="alarm-time">${alarm.time}</div>
+                        <div>${alarm.medicine} (${getFrequencyText(alarm.frequency)})</div>
+                    </div>
+                    <div class="alarm-actions">
+                        <button class="alarm-btn" onclick="toggleAlarm(${alarm.id})">
+                            <i class="fas ${alarm.active ? 'fa-bell' : 'fa-bell-slash'}"></i>
+                        </button>
+                        <button class="alarm-btn" onclick="deleteAlarm(${alarm.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                
+                alarmList.appendChild(alarmItem);
+            });
+        }
+        
+        function getFrequencyText(frequency) {
+            switch(frequency) {
+                case 'once': return '1x sehari';
+                case 'twice': return '2x sehari';
+                case 'thrice': return '3x sehari';
+                default: return '1x sehari';
+            }
+        }
+        
+        function toggleAlarm(id) {
+            const alarm = alarms.find(a => a.id === id);
+            if (alarm) {
+                alarm.active = !alarm.active;
+                displayAlarms();
+            }
+        }
+        
+        function deleteAlarm(id) {
+            alarms = alarms.filter(a => a.id !== id);
+            displayAlarms();
+        }
+        
+        function startAlarmCheck() {
+            if (alarmInterval) clearInterval(alarmInterval);
+            
+            alarmInterval = setInterval(() => {
+                const now = new Date();
+                const currentTime = now.getHours().toString().padStart(2, '0') + ':' + 
+                                  now.getMinutes().toString().padStart(2, '0');
+                
+                alarms.forEach(alarm => {
+                    if (alarm.active && alarm.time === currentTime) {
+                        // Tampilkan notifikasi
+                        if (Notification.permission === 'granted') {
+                            new Notification('Pengingat Minum Obat', {
+                                body: `Waktunya minum ${alarm.medicine}`,
+                                icon: '/favicon.ico'
+                            });
+                        } else if (Notification.permission !== 'denied') {
+                            Notification.requestPermission().then(permission => {
+                                if (permission === 'granted') {
+                                    new Notification('Pengingat Minum Obat', {
+                                        body: `Waktunya minum ${alarm.medicine}`,
+                                        icon: '/favicon.ico'
+                                    });
+                                }
+                            });
+                        }
+                        
+                        // Tampilkan alert sebagai fallback
+                        alert(`Pengingat: Waktunya minum ${alarm.medicine}`);
+                    }
+                });
+            }, 60000); // Cek setiap menit
+        }
+        
+        function calculateElderHeartRate() {
+            const age = parseInt(document.getElementById('elderAge').value);
+            
+            if (!age || age < 60) {
+                alert('Harap masukkan usia yang valid (minimal 60 tahun).');
+                return;
+            }
+            
+            const maxHeartRate = 220 - age;
+            const targetMin = Math.round(maxHeartRate * 0.5);
+            const targetMax = Math.round(maxHeartRate * 0.75); // Lebih rendah untuk lansia
+            
+            const result = document.getElementById('heartRateResult');
+            result.innerHTML = `
+                <h4>Hasil Perhitungan Detak Jantung:</h4>
+                <p><strong>Detak Jantung Maksimal:</strong> ${maxHeartRate} bpm</p>
+                <p><strong>Detak Jantung Normal Saat Istirahat:</strong> 60-100 bpm</p>
+                <p><strong>Zona Latihan Aman:</strong> ${targetMin} - ${targetMax} bpm</p>
+                <p style="margin-top: 15px; font-style: italic;">Untuk lansia, disarankan berkonsultasi dengan dokter sebelum memulai program latihan baru.</p>
+            `;
+            result.classList.add('active');
+        }
+        
+        // ========== FUNGSI KALKULATOR ==========
+        function openCalculator(type) {
+            const calculatorPopup = document.getElementById('calculatorPopup');
+            const popupContent = document.getElementById('popupContent');
+            const popupTitle = document.getElementById('popupTitle');
+            const calculatorForm = document.getElementById('calculatorForm');
+            const calculatorResult = document.getElementById('calculatorResult');
+            
+            // Reset form dan hasil
+            calculatorResult.classList.remove('active');
+            
+            // Set judul popup
+            switch(type) {
+                case 'bmi':
+                    popupTitle.textContent = 'Kalkulator BMI';
+                    setBmiForm();
+                    break;
+                case 'heart':
+                    popupTitle.textContent = 'Kalkulator Denyut Jantung';
+                    setHeartForm();
+                    break;
+                case 'calorie':
+                    popupTitle.textContent = 'Kalkulator Kalori';
+                    setCalorieForm();
+                    break;
+            }
+            
+            // Tampilkan popup
+            calculatorPopup.classList.add('active');
+            popupContent.classList.add('active');
+        }
+        
+        function closeCalculatorPopup() {
+            const calculatorPopup = document.getElementById('calculatorPopup');
+            const popupContent = document.getElementById('popupContent');
+            
+            calculatorPopup.classList.remove('active');
+            popupContent.classList.remove('active');
+        }
+        
+        function setBmiForm() {
+            const calculatorForm = document.getElementById('calculatorForm');
+            
+            calculatorForm.innerHTML = `
+                <div class="form-group">
+                    <label for="weight">Berat Badan (kg)</label>
+                    <input type="number" id="weight" placeholder="Masukkan berat badan" min="1" max="300">
+                </div>
+                <div class="form-group">
+                    <label for="height">Tinggi Badan (cm)</label>
+                    <input type="number" id="height" placeholder="Masukkan tinggi badan" min="50" max="250">
+                </div>
+            `;
+            
+            document.getElementById('calculateBtn').onclick = calculateBmi;
+            document.getElementById('resetCalculator').onclick = resetForm;
+        }
+        
+        function setHeartForm() {
+            const calculatorForm = document.getElementById('calculatorForm');
+            
+            calculatorForm.innerHTML = `
+                <div class="form-group">
+                    <label for="age">Usia (tahun)</label>
+                    <input type="number" id="age" placeholder="Masukkan usia" min="1" max="120">
+                </div>
+            `;
+            
+            document.getElementById('calculateBtn').onclick = calculateHeart;
+            document.getElementById('resetCalculator').onclick = resetForm;
+        }
+        
+        function setCalorieForm() {
+            const calculatorForm = document.getElementById('calculatorForm');
+            
+            calculatorForm.innerHTML = `
+                <div class="form-group">
+                    <label for="calorieAge">Usia (tahun)</label>
+                    <input type="number" id="calorieAge" placeholder="Masukkan usia" min="1" max="120">
+                </div>
+                <div class="form-group">
+                    <label for="calorieWeight">Berat Badan (kg)</label>
+                    <input type="number" id="calorieWeight" placeholder="Masukkan berat badan" min="1" max="300">
+                </div>
+                <div class="form-group">
+                    <label for="calorieHeight">Tinggi Badan (cm)</label>
+                    <input type="number" id="calorieHeight" placeholder="Masukkan tinggi badan" min="50" max="250">
+                </div>
+                <div class="form-group">
+                    <label for="activityLevel">Tingkat Aktivitas</label>
+                    <select id="activityLevel">
+                        <option value="1.2">Sedentary (sedikit atau tidak berolahraga)</option>
+                        <option value="1.375">Ringan (olahraga ringan 1-3 hari/minggu)</option>
+                        <option value="1.55">Sedang (olahraga sedang 3-5 hari/minggu)</option>
+                        <option value="1.725">Aktif (olahraga berat 6-7 hari/minggu)</option>
+                        <option value="1.9">Sangat Aktif (olahraga sangat berat & pekerjaan fisik)</option>
+                    </select>
+                </div>
+            `;
+            
+            document.getElementById('calculateBtn').onclick = calculateCalorie;
+            document.getElementById('resetCalculator').onclick = resetForm;
+        }
+        
+        function calculateBmi() {
+            const weight = parseFloat(document.getElementById('weight').value);
+            const height = parseFloat(document.getElementById('height').value) / 100;
+            
+            if (weight && height) {
+                const bmi = weight / (height * height);
+                let category = '';
+                let categoryClass = '';
+                
+                if (bmi < 18.5) {
+                    category = 'Underweight (Kekurangan berat badan)';
+                    categoryClass = 'result-underweight';
+                } else if (bmi < 25) {
+                    category = 'Normal (Berat badan ideal)';
+                    categoryClass = 'result-normal';
+                } else if (bmi < 30) {
+                    category = 'Overweight (Kelebihan berat badan)';
+                    categoryClass = 'result-overweight';
+                } else {
+                    category = 'Obese (Obesitas)';
+                    categoryClass = 'result-obese';
+                }
+                
+                const calculatorResult = document.getElementById('calculatorResult');
+                calculatorResult.innerHTML = `
+                    <h4>Hasil Perhitungan BMI:</h4>
+                    <div class="result-value">${bmi.toFixed(1)}</div>
+                    <div class="result-category ${categoryClass}">${category}</div>
+                    <p style="margin-top: 15px;">BMI (Body Mass Index) adalah indikator sederhana dari korespondensi antara berat dan tinggi badan.</p>
+                `;
+                calculatorResult.classList.add('active');
+            } else {
+                alert('Harap masukkan berat dan tinggi badan yang valid.');
+            }
+        }
+        
+        function calculateHeart() {
+            const age = parseInt(document.getElementById('age').value);
+            
+            if (age) {
+                const maxHeartRate = 220 - age;
+                const targetMin = Math.round(maxHeartRate * 0.5);
+                const targetMax = Math.round(maxHeartRate * 0.85);
+                
+                const calculatorResult = document.getElementById('calculatorResult');
+                calculatorResult.innerHTML = `
+                    <h4>Hasil Perhitungan Denyut Jantung:</h4>
+                    <p><strong>Denyut Jantung Maksimal:</strong> ${maxHeartRate} bpm</p>
+                    <p><strong>Zona Latihan Target:</strong> ${targetMin} - ${targetMax} bpm</p>
+                    <p style="margin-top: 15px;">Zona latihan target adalah rentang denyut jantung yang ideal untuk latihan kardio.</p>
+                `;
+                calculatorResult.classList.add('active');
+            } else {
+                alert('Harap masukkan usia yang valid.');
+            }
+        }
+        
+        function calculateCalorie() {
+            const calorieAge = parseInt(document.getElementById('calorieAge').value);
+            const calorieWeight = parseFloat(document.getElementById('calorieWeight').value);
+            const calorieHeight = parseFloat(document.getElementById('calorieHeight').value);
+            const activityLevel = parseFloat(document.getElementById('activityLevel').value);
+            
+            if (calorieAge && calorieWeight && calorieHeight) {
+                const bmr = 10 * calorieWeight + 6.25 * calorieHeight - 5 * calorieAge + 5;
+                const tdee = Math.round(bmr * activityLevel);
+                
+                const calculatorResult = document.getElementById('calculatorResult');
+                calculatorResult.innerHTML = `
+                    <h4>Hasil Perhitungan Kebutuhan Kalori:</h4>
+                    <p><strong>BMR (Basal Metabolic Rate):</strong> ${Math.round(bmr)} kalori/hari</p>
+                    <p><strong>TDEE (Total Daily Energy Expenditure):</strong> ${tdee} kalori/hari</p>
+                    <p style="margin-top: 15px;">BMR adalah jumlah kalori yang dibutuhkan tubuh untuk fungsi dasar, sedangkan TDEE termasuk aktivitas fisik.</p>
+                `;
+                calculatorResult.classList.add('active');
+            } else {
+                alert('Harap masukkan semua data yang diperlukan.');
+            }
+        }
+        
+        function resetForm() {
+            document.getElementById('calculatorForm').reset();
+            document.getElementById('calculatorResult').classList.remove('active');
+        }
+        
+        // ========== INISIALISASI ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inisialisasi peta
+            initMap();
+            
+            // Event listener untuk hamburger menu
+            document.getElementById('hamburgerMenu').addEventListener('click', toggleMobileMenu);
+            document.getElementById('mobileNavOverlay').addEventListener('click', closeMobileMenu);
+            
+            // Event listener untuk menutup popup
+            document.getElementById('popupClose').addEventListener('click', closeCalculatorPopup);
+            document.getElementById('featureClose').addEventListener('click', closeFeaturePopup);
+            
+            // Event listener untuk mobile navigation
+            document.querySelectorAll('.mobile-nav-links a').forEach(link => {
+                link.addEventListener('click', closeMobileMenu);
+            });
+            
+            // Smooth scrolling untuk navigasi
+            document.querySelectorAll('.mobile-nav-links a').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+            
+            // Minta izin notifikasi
+            if ('Notification' in window) {
+                Notification.requestPermission();
+            }
+            
+            // Event listener untuk input AI chat (Enter key)
+            document.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && document.getElementById('aiChatInput')) {
+                    sendAIMessage();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
