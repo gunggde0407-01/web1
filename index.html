@@ -558,7 +558,7 @@
             border-radius: 10px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             width: 90%;
-            max-width: 600px;
+            max-width: 800px;
             max-height: 90vh;
             overflow-y: auto;
             transform: scale(0.8);
@@ -605,6 +605,8 @@
         
         .popup-body {
             padding: 25px;
+            max-height: 60vh;
+            overflow-y: auto;
         }
         
         .popup-footer {
@@ -869,12 +871,30 @@
         }
         
         .education-section {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            border-left: 4px solid var(--primary-pink);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
         
         .education-section h4 {
             color: var(--primary-pink);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.3rem;
+        }
+        
+        .education-section h5 {
+            color: var(--dark-pink);
             margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.1rem;
         }
         
         .education-section ul {
@@ -883,6 +903,37 @@
         
         .education-section li {
             margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        .education-section p {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        
+        .education-note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-style: italic;
+        }
+        
+        .education-warning {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .education-tip {
+            background: #d1ecf1;
+            border-left: 4px solid #0dcaf0;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
         }
         
         /* Tabs */
@@ -1163,7 +1214,7 @@
                 <div class="chatbot-content">
                     <h2 class="chatbot-title">AI Health Assistant</h2>
                     <p class="chatbot-desc">Dapatkan jawaban instan untuk pertanyaan kesehatan Anda. Chatbot kami menggunakan teknologi AI untuk memberikan informasi yang akurat dan sesuai dengan kebutuhan usia Anda, baik tentang menstruasi, KB, gizi, lansia, atau pola hidup sehat.</p>
-                    <button class="chatbot-button" onclick="openFeature('ai')">
+                    <button class="chatbot-button" onclick="openChatbot()">
                         <i class="fas fa-comment-alt"></i> Mulai Konsultasi
                     </button>
                 </div>
@@ -1261,34 +1312,58 @@
     <script type="module">
         import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
 
-        createChat({
-            webhookUrl: 'https://agung121.app.n8n.cloud/webhook/b4fc0e28-60e3-4a1b-94f6-5f8328d04de2/chat',
-            webhookConfig: {
-                method: 'POST',
-                headers: {}
-            },
-            target: '#n8n-chat',
-            mode: 'window',
-            chatInputKey: 'chatInput',
-            chatSessionKey: 'sessionId',
-            loadPreviousSession: true,
-            metadata: {},
-            showWelcomeScreen: false,
-            defaultLanguage: 'en',
-            initialMessages: [
-                'Hi Sobat!',
-                'Halo! Saya i-Doc, asisten kesehatan AI Anda. Ada yang bisa saya bantu hari ini?'
-            ],
-            i18n: {
-                en: {
-                    title: '🤖I-doc',
-                    subtitle: 'Mulai berbincang dengan asistenmu!',
-                    footer: '',
-                    getStarted: 'New Conversation',
-                    inputPlaceholder: 'Ketik pertanyaanmu di sini...',
+        // Inisialisasi chatbot
+        function initChatbot() {
+            createChat({
+                webhookUrl: 'https://agung121.app.n8n.cloud/webhook/b4fc0e28-60e3-4a1b-94f6-5f8328d04de2/chat',
+                webhookConfig: {
+                    method: 'POST',
+                    headers: {}
                 },
-            },
-            enableStreaming: false,
+                target: '#n8n-chat',
+                mode: 'window',
+                chatInputKey: 'chatInput',
+                chatSessionKey: 'sessionId',
+                loadPreviousSession: true,
+                metadata: {},
+                showWelcomeScreen: false,
+                defaultLanguage: 'en',
+                initialMessages: [
+                    'Hi Sobat!',
+                    'Halo! Saya i-Doc, asisten kesehatan AI Anda. Ada yang bisa saya bantu hari ini?'
+                ],
+                i18n: {
+                    en: {
+                        title: '🤖I-doc',
+                        subtitle: 'Mulai berbincang dengan asistenmu!',
+                        footer: '',
+                        getStarted: 'New Conversation',
+                        inputPlaceholder: 'Ketik pertanyaanmu di sini...',
+                    },
+                },
+                enableStreaming: false,
+            });
+        }
+
+        // Fungsi untuk membuka chatbot
+        function openChatbot() {
+            // Cari elemen chatbot dan klik untuk membuka
+            const chatButton = document.querySelector('#n8n-chat button');
+            if (chatButton) {
+                chatButton.click();
+            } else {
+                // Jika tidak ditemukan, inisialisasi ulang
+                initChatbot();
+                setTimeout(() => {
+                    const chatButton = document.querySelector('#n8n-chat button');
+                    if (chatButton) chatButton.click();
+                }, 500);
+            }
+        }
+        
+        // Inisialisasi chatbot saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', function() {
+            initChatbot();
         });
     </script>
     <script>
@@ -1467,13 +1542,281 @@
         function setRemajaFeatures(container) {
             container.innerHTML = `
                 <div class="tabs">
-                    <div class="tab active" onclick="switchTab('menstruasi')">Kalender Menstruasi</div>
+                    <div class="tab active" onclick="switchTab('edukasi')">Edukasi</div>
+                    <div class="tab" onclick="switchTab('menstruasi')">Kalender Menstruasi</div>
                     <div class="tab" onclick="switchTab('ttd')">Tablet Tambah Darah</div>
                     <div class="tab" onclick="switchTab('lila')">Pengukur LILA</div>
-                    <div class="tab" onclick="switchTab('edukasi')">Edukasi</div>
                 </div>
                 
-                <div id="menstruasi" class="tab-content active">
+                <div id="edukasi" class="tab-content active">
+                    <div class="education-content">
+                        <h4><i class="fas fa-heartbeat"></i> Edukasi Kesehatan Reproduksi Remaja</h4>
+                        
+                        <div class="education-section">
+                            <h5><i class="fas fa-user-circle"></i> Apa Itu Kesehatan Reproduksi?</h5>
+                            <p>Kesehatan reproduksi adalah keadaan sehat secara fisik, mental, dan sosial secara utuh pada sistem, fungsi, dan proses reproduksi. Ini bukan hanya tentang tidak adanya penyakit, tetapi juga kemampuan untuk memiliki kehidupan seksual yang memuaskan dan aman, serta kebebasan untuk memutuskan kapan dan seberapa sering bereproduksi.</p>
+                            <p>Masa remaja adalah periode penting untuk memahami kesehatan reproduksi karena tubuh mengalami banyak perubahan. Pengetahuan yang tepat akan membantu remaja membuat keputusan yang sehat dan bertanggung jawab.</p>
+                        </div>
+                        
+                        <div class="education-section">
+                            <h5><i class="fas fa-venus-mars"></i> Perubahan Fisik Masa Pubertas</h5>
+                            <p>Pubertas adalah masa ketika tubuh remaja berkembang menjadi tubuh dewasa yang mampu bereproduksi. Perubahan ini dipicu oleh hormon dan terjadi pada usia yang berbeda untuk setiap individu.</p>
+                            
+                            <h5><i class="fas fa-female"></i> Perubahan pada Perempuan:</h5>
+                            <ul>
+                                <li><strong>Pertumbuhan payudara</strong> (biasanya dimulai usia 8-13 tahun)</li>
+                                <li><strong>Menstruasi pertama (menarche)</strong> - rata-rata usia 12-13 tahun</li>
+                                <li><strong>Pertumbuhan rambut</strong> di ketiak dan area kemaluan</li>
+                                <li><strong>Perubahan bentuk tubuh</strong> - pinggul melebar, lemak tubuh bertambah</li>
+                                <li><strong>Pertumbuhan tinggi badan</strong> yang pesat</li>
+                                <li><strong>Peningkatan keringat</strong> dan kelenjar minyak</li>
+                            </ul>
+                            
+                            <h5><i class="fas fa-male"></i> Perubahan pada Laki-laki:</h5>
+                            <ul>
+                                <li><strong>Pembesaran testis dan penis</strong> (biasanya dimulai usia 9-14 tahun)</li>
+                                <li><strong>Suara menjadi lebih berat</strong> karena pita suara membesar</li>
+                                <li><strong>Tumbuh jakun</strong> di leher</li>
+                                <li><strong>Pertumbuhan rambut</strong> di wajah, ketiak, dan area kemaluan</li>
+                                <li><strong>Mimpi basah</strong> (ejakulasi saat tidur)</li>
+                                <li><strong>Otot lebih berkembang</strong> dan bahu melebar</li>
+                            </ul>
+                            
+                            <div class="education-note">
+                                <p><strong>Ingat:</strong> Setiap orang mengalami pubertas dengan kecepatan berbeda. Jangan bandingkan dirimu dengan teman sebaya. Perubahan ini normal dan alami!</p>
+                            </div>
+                        </div>
+                        
+                        <div class="education-section">
+                            <h5><i class="fas fa-female"></i> Kesehatan Menstruasi</h5>
+                            <p>Menstruasi adalah proses alami dimana rahim meluruhkan dindingnya yang disertai dengan perdarahan melalui vagina. Ini adalah bagian normal dari siklus reproduksi perempuan.</p>
+                            
+                            <h5>Fakta tentang Menstruasi:</h5>
+                            <ul>
+                                <li><strong>Siklus normal:</strong> 21-35 hari dengan durasi 3-7 hari</li>
+                                <li><strong>Volume darah:</strong> Sekitar 30-80 ml per siklus</li>
+                                <li><strong>Ganti pembalut:</strong> Setiap 4-6 jam atau lebih sering jika darah banyak</li>
+                                <li><strong>Kebersihan area kewanitaan:</strong> Bersihkan dari depan ke belakang untuk mencegah infeksi</li>
+                                <li><strong>Keluhan umum:</strong> Nyeri perut (dismenore), perubahan mood, lelah, payudara nyeri</li>
+                            </ul>
+                            
+                            <h5>Produk Menstruasi yang Tersedia:</h5>
+                            <ul>
+                                <li><strong>Pembalut:</strong> Mudah digunakan, cocok untuk pemula</li>
+                                <li><strong>Tampon:</strong> Dimasukkan ke dalam vagina, nyaman untuk beraktivitas</li>
+                                <li><strong>Menstrual cup:</strong> Cawan silikon yang dapat digunakan ulang</li>
+                                <li><strong>Pembalut kain:</strong> Ramah lingkungan, dapat dicuci dan digunakan kembali</li>
+                            </ul>
+                            
+                            <div class="education-warning">
+                                <h5><i class="fas fa-exclamation-triangle"></i> Tanda Bahaya yang Perlu Diwaspadai:</h5>
+                                <ul>
+                                    <li>Nyeri hebat yang tidak tertahankan</li>
+                                    <li>Perdarahan sangat banyak (ganti pembalut setiap 1-2 jam)</li>
+                                    <li>Siklus tidak teratur >3 bulan setelah menstruasi pertama</li>
+                                    <li>Tidak menstruasi sama sekali hingga usia 16 tahun</li>
+                                    <li>Gejala anemia (pucat, lemas, pusing) selama menstruasi</li>
+                                </ul>
+                                <p>Jika mengalami tanda-tanda di atas, segera konsultasi ke tenaga kesehatan!</p>
+                            </div>
+                        </div>
+                        
+                        <div class="education-section">
+                            <h5><i class="fas fa-heart"></i> Hubungan Sehat dan Konsen</h5>
+                            <p>Konsen (persetujuan) adalah dasar dari hubungan yang sehat dan hormat. Memahami konsep konsen sangat penting untuk menjaga kesehatan fisik dan emosional.</p>
+                            
+                            <h5>Apa Itu Konsen?</h5>
+                            <ul>
+                                <li><strong>Harus diberikan secara sukarela</strong> - tanpa paksaan, tekanan, atau manipulasi</li>
+                                <li><strong>Harus diberikan dengan sadar</strong> - tidak under influence of alcohol/drugs</li>
+                                <li><strong>Dapat ditarik kapan saja</strong> - mengatakan "tidak" atau "berhenti" kapan pun</li>
+                                <li><strong>Harus spesifik</strong> - menyetujui satu aktivitas tidak berarti menyetujui yang lain</li>
+                            </ul>
+                            
+                            <h5>Ciri-ciri Hubungan Sehat:</h5>
+                            <ul>
+                                <li><strong>Rasa hormat</strong> - menghargai pendapat, batasan, dan privasi masing-masing</li>
+                                <li><strong>Kepercayaan</strong> - jujur dan dapat diandalkan</li>
+                                <li><strong>Komunikasi terbuka</strong> - dapat membicarakan perasaan dan kekhawatiran</li>
+                                <li><strong>Kesetaraan</strong> - keputusan dibuat bersama, tidak ada yang mendominasi</li>
+                                <li><strong>Dukungan</strong> - saling mendukung tujuan dan impian</li>
+                            </ul>
+                            
+                            <h5>Tanda Hubungan Tidak Sehat:</h5>
+                            <ul>
+                                <li><strong>Kontrol berlebihan</strong> - mengatur pertemanan, pakaian, atau aktivitas</li>
+                                <li><strong>Manipulasi emosional</strong> - membuat merasa bersalah atau takut</li>
+                                <li><strong>Pelecehan verbal</strong> - menghina, merendahkan, atau meneriaki</li>
+                                <li><strong>Pelecehan fisik</strong> - mendorong, memukul, atau menyakiti</li>
+                                <li><strong>Tekanan seksual</strong> - memaksa aktivitas seksual yang tidak diinginkan</li>
+                            </ul>
+                            
+                            <div class="education-tip">
+                                <p><strong>Tip:</strong> Kesiapan berhubungan seksual membutuhkan pertimbangan matang tentang konsekuensi fisik, emosional, dan sosial. Pastikan kamu benar-benar siap dan membuat keputusan untuk dirimu sendiri, bukan karena tekanan dari orang lain.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="education-section">
+                            <h5><i class="fas fa-shield-alt"></i> Pencegahan Kehamilan Tidak Diinginkan & IMS</h5>
+                            <p>Remaja perlu memahami cara mencegah kehamilan yang tidak direncanakan dan Infeksi Menular Seksual (IMS) untuk melindungi kesehatan reproduksi mereka.</p>
+                            
+                            <h5>Metode Kontrasepsi untuk Remaja:</h5>
+                            <ul>
+                                <li><strong>Kondom</strong> - metode paling efektif mencegah IMS sekaligus kehamilan</li>
+                                <li><strong>Pil KB</strong> - harus dengan resep dokter, efektif jika digunakan konsisten</li>
+                                <li><strong>KB Suntik</strong> - perlindungan 1-3 bulan, perlu konsultasi dokter</li>
+                                <li><strong>Implan</strong> - efektif hingga 3 tahun, dipasang oleh tenaga kesehatan</li>
+                            </ul>
+                            
+                            <h5>Infeksi Menular Seksual (IMS) yang Umum:</h5>
+                            <ul>
+                                <li><strong>HIV/AIDS</strong> - menyerang sistem kekebalan tubuh</li>
+                                <li><strong>Sifilis</strong> - dapat menyebabkan komplikasi serius jika tidak diobati</li>
+                                <li><strong>Gonore (kencing nanah)</strong> - infeksi bakteri pada alat kelamin</li>
+                                <li><strong>Klamidia</strong> - sering tanpa gejala, dapat menyebabkan infertilitas</li>
+                                <li><strong>Herpes</strong> - ditandai dengan luka lepuh di area genital</li>
+                                <li><strong>HPV</strong> - dapat menyebabkan kutil kelamin dan kanker serviks</li>
+                            </ul>
+                            
+                            <h5>Gejala IMS yang Perlu Diwaspadai:</h5>
+                            <ul>
+                                <li>Keputihan tidak normal (warna, bau, atau tekstur berbeda)</li>
+                                <li>Luka, benjolan, atau ruam di area genital</li>
+                                <li>Nyeri atau rasa terbakar saat buang air kecil</li>
+                                <li>Nyeri saat berhubungan seksual</li>
+                                <li>Perdarahan di luar masa menstruasi</li>
+                                <li>Nyeri di perut bagian bawah</li>
+                            </ul>
+                            
+                            <div class="education-warning">
+                                <p><strong>Penting:</strong> Segera konsultasi ke tenaga kesehatan jika ada gejala IMS. Banyak IMS yang dapat diobati jika ditangani sejak dini. Pengobatan dini juga mencegah penularan ke orang lain.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="education-section">
+                            <h5><i class="fas fa-brain"></i> Kesehatan Mental dan Emosional</h5>
+                            <p>Masa remaja tidak hanya tentang perubahan fisik, tetapi juga perubahan emosional dan mental. Memahami dan mengelola kesehatan mental sama pentingnya dengan kesehatan fisik.</p>
+                            
+                            <h5>Perubahan Emosional yang Normal:</h5>
+                            <ul>
+                                <li><strong>Perubahan mood</strong> - perasaan naik turun adalah hal normal</li>
+                                <li><strong>Perasaan sensitif</strong> - mudah tersinggung atau marah</li>
+                                <li><strong>Kebutuhan privasi</strong> - ingin lebih banyak waktu sendirian</li>
+                                <li><strong>Kebingungan identitas</strong> - mencari jati diri dan tempat dalam dunia</li>
+                                <li><strong>Pengambilan risiko</strong> - cenderung mencoba hal baru dan berisiko</li>
+                            </ul>
+                            
+                            <h5>Cara Menjaga Kesehatan Mental:</h5>
+                            <ul>
+                                <li><strong>Kenali perasaanmu</strong> - beri nama pada emosi yang dirasakan</li>
+                                <li><strong>Ekspresikan perasaan</strong> - bicara dengan orang terpercaya atau tulis jurnal</li>
+                                <li><strong>Kelola stres</strong> - dengan olahraga, meditasi, atau hobi</li>
+                                <li><strong>Jaga pola tidur</strong> - remaja butuh 8-10 jam tidur per malam</li>
+                                <li><strong>Bangun hubungan positif</strong> - dengan keluarga dan teman</li>
+                                <li><strong>Batasi media sosial</strong> - bandingkan dirimu dengan standar realitas, bukan yang ditampilkan di media sosial</li>
+                            </ul>
+                            
+                            <h5>Tanda Perlu Bantuan Profesional:</h5>
+                            <ul>
+                                <li>Perasaan sedih atau cemas yang berlangsung lebih dari 2 minggu</li>
+                                <li>Perubahan drastis dalam pola makan atau tidur</li>
+                                <li>Kehilangan minat pada aktivitas yang biasa dinikmati</li>
+                                <li>Kesulitan berkonsentrasi atau nilai sekolah menurun</li>
+                                <li>Pikiran untuk menyakiti diri sendiri atau orang lain</li>
+                                <li>Penggunaan narkoba atau alkohol untuk mengatasi perasaan</li>
+                            </ul>
+                            
+                            <div class="education-tip">
+                                <p><strong>Ingat:</strong> Meminta bantuan ketika sedang berjuang adalah tanda kekuatan, bukan kelemahan. Bicaralah dengan orang tua, guru, konselor sekolah, atau tenaga kesehatan mental jika kamu membutuhkan dukungan.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="education-section">
+                            <h5><i class="fas fa-utensils"></i> Gizi Seimbang untuk Remaja</h5>
+                            <p>Masa remaja adalah periode pertumbuhan pesat yang membutuhkan nutrisi optimal. Pola makan yang sehat mendukung perkembangan fisik, kognitif, dan emosional.</p>
+                            
+                            <h5>Kebutuhan Nutrisi Penting untuk Remaja:</h5>
+                            <ul>
+                                <li><strong>Protein</strong> - untuk pertumbuhan dan perkembangan otot (daging, ikan, telur, kacang-kacangan)</li>
+                                <li><strong>Kalsium</strong> - untuk tulang dan gigi yang kuat (susu, yogurt, keju, sayuran hijau)</li>
+                                <li><strong>Zat besi</strong> - terutama penting untuk remaja putri yang menstruasi (daging merah, bayam, kacang-kacangan)</li>
+                                <li><strong>Vitamin D</strong> - membantu penyerapan kalsium (sinar matahari, ikan berlemak, telur)</li>
+                                <li><strong>Serat</strong> - untuk pencernaan sehat (buah, sayuran, biji-bijian)</li>
+                            </ul>
+                            
+                            <h5>Tips Pola Makan Sehat:</h5>
+                            <ul>
+                                <li><strong>Sarapan pagi</strong> - penting untuk energi dan konsentrasi di sekolah</li>
+                                <li><strong>Makan teratur</strong> - 3 kali makan utama dan 2-3 kali snack sehat</li>
+                                <li><strong>Perbanyak sayuran dan buah</strong> - minimal 5 porsi per hari</li>
+                                <li><strong>Minum air putih</strong> - minimal 8 gelas per hari, hindari minuman manis</li>
+                                <li><strong>Batasi makanan cepat saji</strong> - tinggi lemak, garam, dan gula</li>
+                                <li><strong>Perhatikan porsi</strong> - makan sampai kenyang, bukan sampai kekenyangan</li>
+                            </ul>
+                            
+                            <h5>Masalah Gizi yang Sering Dialami Remaja:</h5>
+                            <ul>
+                                <li><strong>Anemia</strong> - akibat kekurangan zat besi, gejalanya: lemas, pucat, pusing</li>
+                                <li><strong>Gangguan makan</strong> - seperti anoreksia atau bulimia</li>
+                                <li><strong>Obesitas</strong> - akibat pola makan tidak seimbang dan kurang aktivitas</li>
+                                <li><strong>Kekurangan kalsium</strong> - dapat mempengaruhi kepadatan tulang di masa depan</li>
+                            </ul>
+                            
+                            <div class="education-note">
+                                <p><strong>Tips:</strong> Jangan melakukan diet ketat tanpa konsultasi dengan ahli gizi. Fokuslah pada pola makan seimbang dan aktivitas fisik teratur, bukan pada angka timbangan.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="education-section">
+                            <h5><i class="fas fa-dumbbell"></i> Aktivitas Fisik untuk Remaja</h5>
+                            <p>Aktivitas fisik teratur penting untuk kesehatan fisik, mental, dan perkembangan remaja yang optimal.</p>
+                            
+                            <h5>Manfaat Aktivitas Fisik:</h5>
+                            <ul>
+                                <li>Menguatkan tulang dan otot</li>
+                                <li>Mengontrol berat badan</li>
+                                <li>Meningkatkan mood dan mengurangi stres</li>
+                                <li>Meningkatkan kualitas tidur</li>
+                                <li>Meningkatkan kepercayaan diri</li>
+                                <li>Meningkatkan konsentrasi dan prestasi akademik</li>
+                            </ul>
+                            
+                            <h5>Rekomendasi Aktivitas:</h5>
+                            <ul>
+                                <li><strong>Aktivitas aerobik</strong> - setidaknya 60 menit per hari (berlari, bersepeda, berenang)</li>
+                                <li><strong>Latihan kekuatan</strong> - 3 kali per minggu (push-up, sit-up, angkat beban ringan)</li>
+                                <li><strong>Latihan fleksibilitas</strong> - setiap hari (peregangan, yoga)</li>
+                                <li><strong>Aktivitas menyenangkan</strong> - dansa, olahraga tim, hiking</li>
+                            </ul>
+                            
+                            <div class="education-tip">
+                                <p><strong>Ingat:</strong> Temukan aktivitas yang kamu nikmati sehingga bisa dilakukan secara konsisten. Olahraga seharusnya menyenangkan, bukan menjadi beban!</p>
+                            </div>
+                        </div>
+                        
+                        <div class="education-section">
+                            <h5><i class="fas fa-comments"></i> Kapan Harus Berkonsultasi dengan Tenaga Kesehatan?</h5>
+                            <p>Jangan ragu untuk mencari bantuan profesional ketika memiliki kekhawatiran tentang kesehatan reproduksi atau perkembanganmu.</p>
+                            
+                            <h5>Situasi yang Membutuhkan Konsultasi:</h5>
+                            <ul>
+                                <li>Kekhawatiran tentang perkembangan pubertas (terlalu cepat atau lambat)</li>
+                                <li>Masalah dengan menstruasi (nyeri hebat, tidak teratur, atau tidak datang sama sekali)</li>
+                                <li>Gejala Infeksi Menular Seksual (IMS)</li>
+                                <li>Kekhawatiran tentang kehamilan</li>
+                                <li>Masalah dengan pola makan atau citra tubuh</li>
+                                <li>Kesulitan mengelola emosi atau stres</li>
+                                <li>Pertanyaan tentang kontrasepsi atau hubungan seksual</li>
+                            </ul>
+                            
+                            <div class="education-note">
+                                <p><strong>Penting:</strong> Tenaga kesehatan (dokter, perawat, bidan) ada untuk membantumu, bukan untuk menghakimi. Mereka terlatih untuk menjawab pertanyaanmu dengan informasi yang akurat dan menjaga kerahasiaan. Jangan takut atau malu untuk bertanya!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="menstruasi" class="tab-content">
                     <h4>Kalender Menstruasi</h4>
                     <div class="form-group">
                         <label for="lastPeriod">Tanggal Mulai Menstruasi Terakhir</label>
@@ -1519,43 +1862,6 @@
                     </div>
                     <button class="calculator-btn" onclick="checkLILA()">Periksa Status Gizi</button>
                     <div id="lilaResult" class="calculator-result"></div>
-                </div>
-                
-                <div id="edukasi" class="tab-content">
-                    <div class="education-content">
-                        <h4>Edukasi Kesehatan Reproduksi Remaja</h4>
-                        <div class="education-section">
-                            <h5>Perubahan Fisik Masa Pubertas</h5>
-                            <ul>
-                                <li>Perubahan tinggi dan berat badan</li>
-                                <li>Tumbuhnya rambut di area tertentu</li>
-                                <li>Perubahan suara (pada laki-laki)</li>
-                                <li>Pertumbuhan payudara (pada perempuan)</li>
-                                <li>Menstruasi pertama (pada perempuan)</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="education-section">
-                            <h5>Kesehatan Menstruasi</h5>
-                            <ul>
-                                <li>Ganti pembalut setiap 4-6 jam</li>
-                                <li>Jaga kebersihan area kewanitaan</li>
-                                <li>Catat siklus menstruasi</li>
-                                <li>Konsumsi makanan bergizi selama menstruasi</li>
-                                <li>Lakukan aktivitas fisik ringan</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="education-section">
-                            <h5>Pencegahan Anemia</h5>
-                            <ul>
-                                <li>Konsumsi tablet tambah darah seminggu sekali</li>
-                                <li>Makan makanan kaya zat besi (daging, hati, bayam)</li>
-                                <li>Konsumsi vitamin C untuk penyerapan zat besi</li>
-                                <li>Hindari minum teh bersamaan dengan makanan kaya zat besi</li>
-                            </ul>
-                        </div>
-                    </div>
                 </div>
             `;
         }
@@ -1608,6 +1914,17 @@
                                 <li><strong>Vasektomi/Tubektomi:</strong> Metode permanen</li>
                             </ul>
                         </div>
+
+                        <div class="education-section">
+                            <h5>Pemilihan Metode KB yang Tepat</h5>
+                            <ul>
+                                <li>Pertimbangkan kondisi kesehatan</li>
+                                <li>Diskusikan dengan pasangan</li>
+                                <li>Konsultasi dengan tenaga kesehatan</li>
+                                <li>Pertimbangkan rencana kehamilan berikutnya</li>
+                                <li>Perhatikan efek samping dan kontraindikasi</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
                 
@@ -1633,6 +1950,26 @@
                         <div class="education-section">
                             <h5>4. Fungsi Perlindungan</h5>
                             <p>Memberikan rasa aman dan perlindungan fisik maupun psikologis.</p>
+                        </div>
+
+                        <div class="education-section">
+                            <h5>5. Fungsi Reproduksi</h5>
+                            <p>Meneruskan keturunan dan menjaga kelangsungan keluarga.</p>
+                        </div>
+
+                        <div class="education-section">
+                            <h5>6. Fungsi Sosialisasi dan Pendidikan</h5>
+                            <p>Mendidik dan membimbing anggota keluarga menjadi pribadi yang baik.</p>
+                        </div>
+
+                        <div class="education-section">
+                            <h5>7. Fungsi Ekonomi</h5>
+                            <p>Memenuhi kebutuhan material keluarga secara bersama-sama.</p>
+                        </div>
+
+                        <div class="education-section">
+                            <h5>8. Fungsi Pembinaan Lingkungan</h5>
+                            <p>Menjaga hubungan baik dengan lingkungan sekitar.</p>
                         </div>
                     </div>
                 </div>
@@ -1660,6 +1997,36 @@
                             <h5>4. Kesiapan Spiritual</h5>
                             <p>Pemahaman dan pengamalan nilai-nilai agama dalam kehidupan.</p>
                         </div>
+
+                        <div class="education-section">
+                            <h5>5. Kesiapan Sosial</h5>
+                            <p>Kemampuan berinteraksi dan beradaptasi dengan lingkungan sosial.</p>
+                        </div>
+
+                        <div class="education-section">
+                            <h5>6. Kesiapan Intelektual</h5>
+                            <p>Pengetahuan tentang peran dan tanggung jawab dalam berkeluarga.</p>
+                        </div>
+
+                        <div class="education-section">
+                            <h5>7. Kesiapan Komunikasi</h5>
+                            <p>Kemampuan menyampaikan pikiran dan perasaan secara efektif.</p>
+                        </div>
+
+                        <div class="education-section">
+                            <h5>8. Kesiapan Seksual</h5>
+                            <p>Pemahaman tentang kesehatan reproduksi dan hubungan suami istri.</p>
+                        </div>
+
+                        <div class="education-section">
+                            <h5>9. Kesiapan Parental</h5>
+                            <p>Kesiapan untuk menjadi orang tua dan mengasuh anak.</p>
+                        </div>
+
+                        <div class="education-section">
+                            <h5>10. Kesiapan Karir</h5>
+                            <p>Kestabilan pekerjaan dan rencana pengembangan karir.</p>
+                        </div>
                     </div>
                 </div>
             `;
@@ -1673,6 +2040,7 @@
                     <div class="tab" onclick="switchTab('jantung')">Detak Jantung</div>
                     <div class="tab" onclick="switchTab('aktivitas')">Aktivitas Fisik</div>
                     <div class="tab" onclick="switchTab('rs')">Rumah Sakit</div>
+                    <div class="tab" onclick="switchTab('edukasi-lansia')">Edukasi</div>
                 </div>
                 
                 <div id="alarm" class="tab-content active">
@@ -1721,6 +2089,26 @@
                                 <li><strong>Berenang:</strong> 20-30 menit, 2 kali seminggu</li>
                             </ul>
                         </div>
+
+                        <div class="education-section">
+                            <h5>Latihan Kekuatan</h5>
+                            <ul>
+                                <li><strong>Angkat beban ringan:</strong> 2-3 kali seminggu</li>
+                                <li><strong>Latihan resistensi dengan band elastis</strong></li>
+                                <li><strong>Sit to stand (duduk-berdiri):</strong> 10-15 repetisi</li>
+                                <li><strong>Heel raises (angkat tumit):</strong> 15-20 repetisi</li>
+                            </ul>
+                        </div>
+
+                        <div class="education-section">
+                            <h5>Latihan Keseimbangan</h5>
+                            <ul>
+                                <li><strong>Berdiri dengan satu kaki:</strong> 10-30 detik per kaki</li>
+                                <li><strong>Berjalan tumit ke jari kaki</strong></li>
+                                <li><strong>Tai Chi atau Yoga untuk lansia</strong></li>
+                                <li><strong>Bangun dari kursi tanpa menggunakan tangan</strong></li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
                 
@@ -1729,6 +2117,56 @@
                     <p>Gunakan fitur ini untuk menemukan rumah sakit terdekat dengan layanan yang sesuai kebutuhan lansia.</p>
                     <div style="text-align: center; margin: 20px 0;">
                         <button class="calculator-btn" onclick="closeFeaturePopup(); document.getElementById('peta').scrollIntoView({behavior: 'smooth'})">Buka Peta Rumah Sakit</button>
+                    </div>
+                </div>
+
+                <div id="edukasi-lansia" class="tab-content">
+                    <div class="education-content">
+                        <h4>Edukasi Kesehatan Lansia</h4>
+                        
+                        <div class="education-section">
+                            <h5>Pola Makan Sehat untuk Lansia</h5>
+                            <ul>
+                                <li>Perbanyak serat dari sayuran dan buah</li>
+                                <li>Konsumsi protein berkualitas (ikan, ayam, telur, kacang-kacangan)</li>
+                                <li>Batasi garam, gula, dan lemak jenuh</li>
+                                <li>Minum air putih yang cukup (8 gelas/hari)</li>
+                                <li>Konsumsi makanan kaya kalsium untuk tulang</li>
+                            </ul>
+                        </div>
+
+                        <div class="education-section">
+                            <h5>Pencegahan Penyakit Kronis</h5>
+                            <ul>
+                                <li>Kontrol tekanan darah secara teratur</li>
+                                <li>Periksa kadar gula darah dan kolesterol</li>
+                                <li>Jaga berat badan ideal</li>
+                                <li>Hindari merokok dan minuman beralkohol</li>
+                                <li>Kelola stres dengan baik</li>
+                            </ul>
+                        </div>
+
+                        <div class="education-section">
+                            <h5>Kesehatan Mental Lansia</h5>
+                            <ul>
+                                <li>Jaga interaksi sosial dengan keluarga dan teman</li>
+                                <li>Lakukan hobi dan aktivitas yang menyenangkan</li>
+                                <li>Tidur yang cukup dan berkualitas</li>
+                                <li>Kelola emosi dan pikiran positif</li>
+                                <li>Cari bantuan jika mengalami gejala depresi atau kecemasan</li>
+                            </ul>
+                        </div>
+
+                        <div class="education-section">
+                            <h5>Pencegahan Cedera dan Jatuh</h5>
+                            <ul>
+                                <li>Gunakan alas kaki yang nyaman dan tidak licin</li>
+                                <li>Pastikan pencahayaan rumah cukup</li>
+                                <li>Pasang pegangan tangan di kamar mandi dan tangga</li>
+                                <li>Hindari berjalan di lantai licin</li>
+                                <li>Periksa penglihatan secara berkala</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             `;
